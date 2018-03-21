@@ -1,6 +1,6 @@
 # hera
 Red Team learning purpose 'From discipline and sufferance comes freedom'. Testing in HackTheBox Retired Virtual Machines: https://www.hackthebox.eu/home
-
+Testing in Kali Linux
 
 # File and classes implemented
 | File  | Classes|
