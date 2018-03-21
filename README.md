@@ -5,7 +5,7 @@ Red Team learning purpose 'From discipline and sufferance comes freedom'. Testin
 # File and classes implemented
 | File  | Classes|
 | ----- | ------ |
-| enum | dns, scan, smb, fuzzer, vuln|
+| enum | dns, scan, smb, fuzzer, vuln, shell|
 
 >[!]Coming soon more classes
 
