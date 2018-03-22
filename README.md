@@ -5,7 +5,7 @@ Red Team learning purpose 'From discipline and sufferance comes freedom'. Testin
 # File and classes implemented
 | File  | Classes|
 | ----- | ------ |
-| enum | dns, scan, smb, fuzzer, vuln, shell|
+| enum | dns, scan, smb, fuzzer, webproxy, vuln, shell|
 
 >[!]Coming soon more classes
 
@@ -29,7 +29,7 @@ hera> ?
 
 Documented commands (type help <topic>):
 ========================================
-dns  fuzzer  help  quit  scan  shell  smb  vuln
+dns  fuzzer  help  quit  scan  shell  smb  vuln  webproxy
 
 hera> 
 ```
