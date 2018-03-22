@@ -12,6 +12,7 @@ import time
 import socket
 import sys
 import requests
+import thread
 
 class dns_():
 	def __init__(self,iprange,out):
@@ -175,19 +176,7 @@ class smb_:
 		self.port = port
 		self.out = out
 
-	def files(self):
-		global out
-		out = self.out
-		try:
-			os.stat(out)
-		except:
-			os.mkdir(out)
-		print (chr(27) + "[1;31m" + "\n %s Doesn't exist, created %s" % (out,out) + chr(27) + "[0m")
-
 	def smb_scan(self):
-		self.files()
-		fsmb = out + "/smb.txt"
-		SmbFile = open(fsmb, 'a')
 		print (chr(27) + "[1;32m" + "[+] Like auxiliary/scanner/smb/smb_enumshares (Metasploit)" + chr(27) + "[0m")
 		print (chr(27) + "[1;32m" + "[+] Establish TCP Client Connect:" + chr(27) + "[0m")
 		# Create a TCP/IP socket
@@ -243,11 +232,11 @@ class smb_:
 			response = sock.recv(1024)
 			amount_received1 += len(response)
 			print >>sys.stderr, 'received>> "%s"' % response[-26:]
-				
 			
 		finally:
 			print >>sys.stderr, 'closing socket'
 			sock.close()
+
 
 class fuzzer_:
 	def __init__(self,ip,wordlist,out):
@@ -269,10 +258,10 @@ class fuzzer_:
 		ffuzzer = out + "/fuzzer.txt"
 		FuzzerFile = open(ffuzzer, 'a')
 		print (chr(27) + "[1;32m" + "[+] Web Fuzzer" + chr(27) + "[0m")
-		opcionMenu = raw_input(chr(27) + "[1;33m" + "\t[!] Do you want to run Web File Extension Fuzzer? (yes/no)" + chr(27) + "[0m")
+		opcionMenu = raw_input(chr(27) + "[1;33m" + "\t[!] Do you want to run Web File Extension Fuzzer? (yes/no): " + chr(27) + "[0m")
 		
 		if opcionMenu == "yes":
-			extension = raw_input(chr(27) + "[1;33m" + "\t[!] Write file extension (Ex .php)" + chr(27) + "[0m")
+			extension = raw_input(chr(27) + "[1;33m" + "\t[!] Write file extension (Ex .php): " + chr(27) + "[0m")
 		with open(self.wordlist, 'rU') as f:
 			print (chr(27) + "[1;31m" + "\n [+] This will be take a long time" + chr(27) + "[0m")
 			for line in f:
@@ -288,21 +277,27 @@ class fuzzer_:
 				if result.status_code == 302:
 					print (chr(27) + "[1;32m" + "[+]"+ url + chr(27) + "[0m")
 					print "302 Found"
+					FuzzerFile.write("[*] Status code: 302 Found\n")
 				elif result.status_code == 307:
 					print (chr(27) + "[1;32m" + "[+]"+ url + chr(27) + "[0m")
 					print "307 Temporary Redirect"
+					FuzzerFile.write("[*] Status code: 307 Temporary Redirect\n")
 				elif result.status_code == 200:
 					print (chr(27) + "[1;32m" + "[+]"+ url + chr(27) + "[0m")
 					print "200 OK"
+					FuzzerFile.write("[*] Status code: 200 OK\n")
 				elif result.status_code == 204:
 					print (chr(27) + "[1;32m" + "[+]"+ url + chr(27) + "[0m")
 					print "204 No Content"
+					FuzzerFile.write("[*] Status code: 204 No Content\n")
 				elif result.status_code == 301:
 					print (chr(27) + "[1;32m" + "[+]"+ url + chr(27) + "[0m")
 					print "301 Moved Permanently"
+					FuzzerFile.write("[*] Status code: 301 Moved Permanently\n")
 				elif result.status_code == 403:
 					print (chr(27) + "[1;32m" + "[+]"+ url + chr(27) + "[0m")
 					print "403 Forbidden"
+					FuzzerFile.write("[*] Status code: 403 Forbidden\n")
 		
 		# Create a TCP/IP socket FUZZER (VERY SLOW-->BETTER REQUESTS LIB)
 		'''client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -333,7 +328,108 @@ class fuzzer_:
 					print(server_address)
 					print "cannot resolve hostname: ", client_socket, err'''
 
-	
+class webproxy_:
+	def __init__(self,ip,out):
+		self.ip = ip
+		self.out = out
+
+	def files(self):
+		global out
+		out = self.out
+		try:
+			os.stat(out)
+		except:
+			os.mkdir(out)
+		print (chr(27) + "[1;31m" + "\n %s Doesn't exist, created %s" % (out,out) + chr(27) + "[0m")
+
+	def webproxy_intercept(self):
+		print (chr(27) + "[1;32m" + "[+] Web Proxy Intercept" + chr(27) + "[0m")
+		print (chr(27) + "[1;33m" + "[!] Using by default proxy port 8050" + chr(27) + "[0m")
+		queue = 50
+		port = 8050
+		
+		localhost = "127.0.0.1"
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.bind((localhost, port))
+		s.listen(queue)
+
+		while True:
+			connection, client_addr = s.accept()
+			thread.start_new_thread(self.thread_, (connection, client_addr))
+			
+
+		s.close()
+
+	def thread_(self, connection, client_addr):
+		data_recv= 100000
+		request = connection.recv(data_recv)
+
+		print(request)
+		print(client_addr)
+
+
+		try:
+			# Create a TCP/IP socket to connect to webserver
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+			s.connect((self.ip, 80))
+			s.send(request)       
+				
+			while True:
+				data = s.recv(data_recv)	
+				if (len(data) > 0):
+					connection.send(data)
+				else:
+					break
+			s.close()
+			connection.close()
+		except socket.error, (value, message):
+			if s:
+				s.close()
+			if conn:
+				connection.close()
+			print(line)
+			print(client_addr)
+			sys.exit(1)
+
+	def webproxy_request(self):
+		self.files()
+		fwebproxy = out + "/webproxy.txt"
+		WebProxyFile = open(fwebproxy, 'a')
+		print (chr(27) + "[1;32m" + "[+] Web Proxy Response" + chr(27) + "[0m")
+		url = 'http://'+self.ip
+		headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'}
+		result = requests.get(url, headers=headers)
+		print(result.content.decode())
+		WebProxyFile.write("[*] HTTP Response throught Proxy: %s\n" % (result.content.decode()))
+
+	def webproxy_repeater(self):
+		self.files()
+		fwebproxy = out + "/webproxy.txt"
+		WebProxyFile = open(fwebproxy, 'a')
+		print (chr(27) + "[1;32m" + "[+] Web Proxy Response" + chr(27) + "[0m")
+		repeater = raw_input(chr(27) + "[1;33m" + "\t[!] Enter path of raw request file to repeat: " + chr(27) + "[0m")
+		url = 'http://'+self.ip
+		with open(repeater, 'rU') as f:
+			for line in f:
+				line = line.strip()
+				line = line.rstrip()
+				array = line.split(" ")
+				#print ("[*] %s" % (array))
+				if "User-Agent:" in array:
+					user_agent = ' '.join(array[1:])
+				elif "Host:" in array:
+					host_ = ' '.join(array[1:])
+				elif "Cookie:" in array:
+					cookie_ = ' '.join(array[1:])
+				elif "Connection:" in array:
+					connection_ = ' '.join(array[1:])
+				elif "Referer:" in array:
+					referer_ = ' '.join(array[1:])
+		headers = {'Host': host_, 'User-Agent': user_agent, 'Cookie': cookie_, 'Referer': referer_, 'Connection': connection_}
+		result = requests.get(url, headers=headers)
+		print(result.content.decode())
+		WebProxyFile.write("[*] HTTP Response throught Proxy using Repeater: %s\n" % (result.content.decode()))
+
 class searchsploit_:
 	def __init__(self,mode,arg_,arg1_,ext,out):
 		self.mode = mode
