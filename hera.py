@@ -71,6 +71,24 @@ class hera(Cmd):
 		_fuzzer_ = fuzzer_(ip,wordlist,out)
 		_fuzzer_.fuzzer_web()
 
+	def do_webproxy(self, args):
+		if len(args) == 0:
+			print ("\nUsage: <parameter>\n")
+			sys.exit(0)
+		else:
+			arg = args.split(" ")
+			ip = arg[0]
+			mode = arg[1]
+			out = arg[2]
+		_webproxy_ = webproxy_(ip,out)
+		if mode == "intercept":
+			_webproxy_.webproxy_intercept()
+		elif mode == "request":
+			_webproxy_.webproxy_request()
+		elif mode == "repeater":
+			_webproxy_.webproxy_repeater()
+
+
 	def do_vuln(self, args):
 		if len(args) == 0:
 			print "\nUsage: <parameter>\n"
@@ -112,6 +130,15 @@ class hera(Cmd):
 
 	def help_fuzzer(self):
 		print (chr(27) + "[1;32m" + "[+] Use: fuzzer <ip> <wordlist> <output> Ex: fuzzer 192.168.1.104 /usr/share/wordlists/dirb/small.txt / dir_out" + chr(27) + "[0m")
+
+	def help_webproxy(self):
+		print (chr(27) + "[1;32m" + "[+] Use: webproxy <ip webserver> <mode> <output> Ex: webproxy 192.168.1.104 intercept dir_out" + chr(27) + "[0m")
+		print (chr(27) + "[1;32m" + "[+] Use: webproxy <ip webserver> <mode> <output> Ex: webproxy 127.0.0.1:8050 request dir_out" + chr(27) + "[0m")
+		print (chr(27) + "[1;32m" + "[+] Use: webproxy <ip webserver> <mode> <output> Ex: webproxy 127.0.0.1:8050 repeater dir_out" + chr(27) + "[0m")
+		print('''Mode:
+			intercept
+			request
+			repeater''')
 
 	def help_vuln(self):
 		print (chr(27) + "[1;32m" + "[+] Use: vuln <mode> <software|arg> <version|arg1> <extension_exploit> <output>" + chr(27) + "[0m")
